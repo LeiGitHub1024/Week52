@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周数计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .week-header {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .week-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+        }
+
+        .day-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .day-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #999;
+            line-height: 1;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-name {
+            font-size: 16px;
+            color: #999;
+            font-weight: 500;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .day-symbol {
+            font-size: 12px;
+            color: #5b9ef5;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            letter-spacing: 2px;
+        }
+
+        .day-item.today .day-number {
+            color: #5b9ef5;
+            font-weight: 700;
+        }
+
+        .day-item.today .day-name {
+            color: #5b9ef5;
+            font-weight: 600;
+        }
+
+        .day-item.today .day-symbol {
+            color: #5b9ef5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="week-header" id="weekHeader">-</div>
+        
+        <div class="week-days" id="weekDays">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        function updateWeek() {
+            const today = new Date();
+
+            // 计算 ISO 8601 周数
+            const date = new Date(today);
+            date.setHours(0, 0, 0, 0);
+            
+            // 获取周一
+            const dayOfWeek = date.getDay();
+            const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            const monday = new Date(date);
+            monday.setDate(diff);
+            
+            // 获取包含周四的年份
+            const thursday = new Date(monday);
+            thursday.setDate(thursday.getDate() + 3);
+            const isoYear = thursday.getFullYear();
+            
+            // 获取该年的第一个周四
+            const jan4 = new Date(isoYear, 0, 4);
+            const jan4DayOfWeek = jan4.getDay();
+            const firstMonday = new Date(jan4);
+            firstMonday.setDate(jan4.getDate() - jan4DayOfWeek + (jan4DayOfWeek === 0 ? -6 : 1));
+            
+            // 计算周数
+            const weekNumber = Math.floor((monday - firstMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+            // 更新周头
+            document.getElementById('weekHeader').textContent = `${isoYear} W${weekNumber}`;
+
+            // 生成本周的7天
+            const weekDaysContainer = document.getElementById('weekDays');
+            weekDaysContainer.innerHTML = '';
+
+            const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(monday);
+                dayDate.setDate(monday.getDate() + i);
+
+                const dayNumber = dayDate.getDate();
+                const dayName = dayNames[i];
+                const isToday = dayDate.toDateString() === today.toDateString();
+
+                const dayItem = document.createElement('div');
+                dayItem.className = `day-item ${isToday ? 'today' : ''}`;
+
+                dayItem.innerHTML = `
+                    <div class="day-number">${dayNumber}</div>
+                    <div class="day-name">${dayName}</div>
+                `;
+
+                weekDaysContainer.appendChild(dayItem);
+            }
+        }
+
+        updateWeek();
+        setInterval(updateWeek, 1000);
+    </script>
+</body>
+</html>
